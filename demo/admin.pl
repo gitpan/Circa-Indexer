@@ -3,8 +3,14 @@
 # Simple perl example to interface with module Circa::Indexer
 # Copyright 2000 A.Barbet alian@alianwebserver.com.  All rights reserved.
 #
-# $Date: 2000/09/25 23:23:24 $
+# $Date: 2000/11/23 22:14:38 $
 # $Log: admin.pl,v $
+# Revision 1.5  2000/11/23 22:14:38  Administrateur
+# Add template as parameter
+#
+# Revision 1.4  2000/10/28 20:36:24  Administrateur
+# ../Indexer.html
+#
 # Revision 1.3  2000/09/25 23:23:24  Administrateur
 # *** empty log message ***
 #
@@ -22,10 +28,10 @@ use Circa::Indexer;
 use Getopt::Long;
 
 my $user = "alian";	# User utilisé
-my $pass = "spee/do00"; # mot de passe
+my $pass = ""; # mot de passe
 my $db 	 = "circa";	# nom de la base de données
 my $indexor = new Circa::Indexer;
-
+#$indexor->proxy('http://195.154.155.254:3128');
 if (@ARGV==0) 
 	{
 print <<EOF;
@@ -44,10 +50,12 @@ Usage: admin.pl [+create] [+drop] [+update=nb_day,id_site] [+most_popular=nb]
 +parse_new=id       : Parse and indexe url last added for site id
 +most_popular=nb,id : Get nb most popular world in database
 
-+add=url,email,titre : Add url to database. Parse and indexed it.
++add=url,email,titre,categorieAuto,template : Add url to database. Parse and indexed it.
 Ex: admin.pl +add=http://www.alianwebserver.com/, 
                   alian\@alianwebserver.com, 
-                  "Alian Web Server"
+                  "Alian Web Server",
+                  1,                  
+                  "/home/alian/circa/circa.htm"
 
 +addLocal=url,email,titre,file,urlRacine,pathRacine : 
 Add a local url to database. Parse and indexed it.
@@ -83,7 +91,7 @@ if ($update) {$indexor->update(split(/,/,$update));}
 if ($add) 
 	{
 	my @l=split(/,/,$add);
-	$indexor->addSite(@l);
+	$indexor->addSite($l[0],$l[1],$l[2],$l[3],undef,undef,$l[4]);
 	print "Url $l[0] added\n";
 	}
 if ($addLocal) 

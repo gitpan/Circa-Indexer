@@ -4,31 +4,33 @@
 # Copyright 2000 A.Barbet alian@alianwebserver.com.  All rights reserved.
 # Take a look in admin.htm
 #
-# $Date: 2000/09/25 23:23:24 $
+# $Date: 2000/11/23 22:16:34 $
 # $Log: admin.cgi,v $
-# Revision 1.3  2000/09/25 23:23:24  Administrateur
+# Revision 1.5  2000/11/23 22:16:34  Administrateur
+# Add template as parameter
 #
-# Revision 1.2  2000/09/22 23:17:04  Administrateur
-# Ajout possiblite d'indexer un site
-# sans passer par un serveur Web
-#
-# Revision 1.1.1.1  2000/09/16 11:26:09  Administrateur
+# Revision 1.1.1.1  2000/09/09 17:08:58  Administrateur
+# Release initiale
 #
 
 use strict;
 use CGI qw/:standard :html3 :netscape escape unescape/;
 use CGI::Carp qw/fatalsToBrowser/;
-
 use Circa::Indexer;
 
 my $user = "alian";	# User utilisé
-my $pass = "spee/do00"; # mot de passe
+my $pass = ""; 	# mot de passe
 my $db 	 = "circa";	# nom de la base de données
-my $masque = "/home/Administrateur/public_html/Circa/Indexer/demo/admin.htm";
-
+my $masque = "/home/Administrateur/public_html/Circa/Indexer/demo/ecrans/admin.htm";
+my $masqueClients = "/tmp/";
 my $indexor = new Circa::Indexer;
-print header,$indexor->start_classic_html;
+$indexor->proxy("http://192.168.100.70:3128");
 
+
+my $cgi = new CGI;
+print header,$indexor->start_classic_html($cgi);
+#if (defined $ENV{'MOD_PERL'}) {print "Mode mod_perl<br>\n";}
+#else {print "Mode cgi<br>\n";}
 if (!$indexor->connect_mysql($user,$pass,$db,"localhost")) {die "Erreur à la connection MySQL:$DBI::errstr\n";}
 
 # Drop table
@@ -48,7 +50,7 @@ if (param('create'))
 # Add site
 if (param('url')) 
 	{
-	$indexor->addSite(param('url'),param('email'),param('titre'));
+	$indexor->addSite(param('url'),param('email'),param('titre'),param('categorieAuto'),$cgi,$masqueClients);
 	print h1("Site ajouté");
 	}
 
@@ -61,7 +63,10 @@ if (param('local_url'))
 		param('titre'),
 		param('local_file'),
 		param('url_racine'),
-		param('local_file_site'));
+		param('local_file_site'),
+		param('categorieAuto'),
+		$cgi,
+		$masqueClients);
 	print h1("Site ajouté");
 	}
 
@@ -75,8 +80,14 @@ if (param('parse_new'))
 # Update index
 if (param('update')) {$indexor->update(param('nb_jours'),param('id'));}
 
+my @l = (0,1);
+my %tab=(0=>'Non',1=>'Oui');	
+my $list = $cgi->scrolling_list(-'name'=>'categorieAuto',
+               		        -'values'=>\@l,
+               		        -'size'=>1,
+                       		-'labels'=>\%tab);
 # Liste des variables à substituer dans le template
-my %vars = ('liste_site'=> $indexor->get_liste_site);
+my %vars = ('liste_site'=> $indexor->get_liste_site($cgi),'categories'=>$list);
 # Affichage du resultat
 print $indexor->fill_template($masque,\%vars),end_html;
 

@@ -34,3 +34,19 @@ Revision 1.6  Date: 2000/10/18 11:30:00
 Revision 1.7  Date: 2000/10/21 15:40:10
  	- Remove use of modules HTML::Parse, CGI, diagnostics
  	- Correct lot of things to get down memory usage
+
+Revision 1.8  Date: 2000/11/23 22:11:11 	
+	- Add template as parameter
+	- Add timeout to 25s.
+	- Add updateUrl function
+	- Add "valide url" feature
+	- Add auto-categorie creation as option
+	- Add level control feature for estimate size index and limit use of speeder feature
+	- Replace count(*) with count(1) 
+	- Add some function for administrate each compte
+	- Add feature to use categories a you want
+	- Add some pod documentation
+	- Correct some bugs
+	- TODO: find a bug with LinkExtor on some site like www.looksmart.bug 
+	It's give out of memory error :-( the todo is correct this problem
+
