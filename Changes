@@ -26,3 +26,8 @@ revision 1.4  Date: 2000/09/25 23:25:43
 revision 1.5  Date: 2000/09/28 16:05:14
 	- Update method in parsing for reject too frequent word
 	- Correct definition of table stats
+	
+Revision 1.6  Date: 2000/10/18 11:30:00
+ 	- Add english doc Indexer/Indexer.pm
+ 	- Correct problem with local indexing
+	

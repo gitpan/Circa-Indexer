@@ -4,6 +4,10 @@ package Circa::Indexer;
 # Copyright 2000 A.Barbet alian@alianwebserver.com.  All rights reserved.
 
 # $Log: Indexer.pm,v $
+# Revision 1.6  2000/10/18 11:30:00  Administrateur
+# -Add english doc Indexer/Indexer.pm
+# -Correct problem with local indexing
+#
 # Revision 1.5  2000/09/28 16:05:14  Administrateur
 # - Update method in parsing for reject too frequent word
 # - Correct definition of table stats
@@ -29,7 +33,7 @@ require Exporter;
 
 @ISA = qw(Exporter);
 @EXPORT = qw();
-$VERSION = ('$Revision: 1.5 $ ' =~ /(\d+\.\d+)/)[0];
+$VERSION = ('$Revision: 1.6 $ ' =~ /(\d+\.\d+)/)[0];
 
 =head1 NAME
 
@@ -96,7 +100,7 @@ Remarques:
 
 =head1 VERSION
 
-$Revision: 1.5 $
+$Revision: 1.6 $
 
 =cut
 
@@ -256,7 +260,7 @@ sub addLocalSite
 	$sth->execute;
 	$sth->finish;
 	my $id = $sth->{'mysql_insertid'};
-	$self->{DBH}->do("insert into ".$self->prefix_table."local_url values($id,'$path','$urlRacine');");
+	$self->{DBH}->do("insert into ".$self->prefix_table."local_url values($id,'$urlRacine','$path');");
 	$self->create_table_circa_id($sth->{'mysql_insertid'});	
 	$self->add_site($url,$id,$local_url) || print "Erreur: $DBI::errstr<br>\n";
 	}
@@ -813,6 +817,7 @@ sub look_at
 					{
 					my $urlb = $$var[2];
 					$urlb=~s/$racineFile/$racineUrl/g;
+					#print h1("Ajout site local:$$var[2] pour $racineFile");
 					$this->add_site($urlb,$idr,$$var[2]) && $nburl++;
 					}
 				elsif ($$var[2]) {$this->add_site($$var[2],$idr);$nburl++;}
