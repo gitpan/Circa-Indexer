@@ -15,7 +15,6 @@
 # Revision 1.1.1.1  2000/09/16 11:26:09  Administrateur
 #
 
-use diagnostics;
 use strict;
 use CGI qw/:standard :html3 :netscape escape unescape/;
 use CGI::Carp qw/fatalsToBrowser/;

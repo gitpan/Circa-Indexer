@@ -60,11 +60,11 @@
             <p class="h2-sans-marge"><b><? $nbpages ?></b></p>
           </td>
         </tr>
-        <tr>
-          <td>
+        <tr> 
+          <td> 
             <p class="h2-sans-marge">Nombre de mots index&eacute;s</p>
           </td>
-          <td>
+          <td> 
             <p class="h2-sans-marge"><b><? $nbmots ?></b></p>
           </td>
         </tr>
@@ -83,8 +83,15 @@
       <p>10 mots les plus recherch&eacute;s :</p>
       <p>10 mots les plus souvent trouv&eacute;s sur votre site :<? $mots_plus_frequent ?></p>
       <h2>Modifier votre compte</h2>
+      <form method="post">
+        <p>Ajouter une URL :
+          <input type="hidden" name="compte" value="<? $id ?>">
+          <input type="text" name="url" value="http://">
+          <input type="submit" name="add_url" value="Add URL">
+        </p>
+      </form>
       <form>
-        <p>Supprimer une URL :
+        <p>Supprimer une URL : 
           <input type="hidden" name="compte" value="<? $id ?>">
           <? $liens ?> 
           <input type="submit" name="delete_url" value="delete">
@@ -97,7 +104,7 @@
       </form>
       <h2>Cat&eacute;gories</h2>
       <form>
-        <p>Supprimer une cat&eacute;gorie :
+        <p>Supprimer une cat&eacute;gorie : 
           <input type="hidden" name="compte" value="<? $id ?>">
           <? $categories ?> 
           <input type="submit" name="delete_categorie" value="delete">

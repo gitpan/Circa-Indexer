@@ -4,12 +4,14 @@
 # Copyright 2000 A.Barbet alian@alianwebserver.com.  All rights reserved.
 #
 # $Log: admin_compte.cgi,v $
+# Revision 1.3  2000/10/21 15:48:51  Administrateur
+# Ajout de la possibilite d'inscrire une url par l'administration par compte
+#
 # Revision 1.2  2000/09/25 23:23:25  Administrateur
 #
 # Revision 1.1  2000/09/25 22:18:11  Administrateur
 #
 
-use diagnostics;
 use strict;
 use CGI qw/:standard :html3 :netscape escape unescape/;
 use CGI::Carp qw/fatalsToBrowser/;
@@ -31,6 +33,8 @@ my $compte = param('compte') || die "Vous devez fournir un identifiant:$ENV{'SCR
 if (param('delete_url')) {$indexor->delete_url($compte,param('id'));print h1("Url supprimée");}
 elsif (param('delete_categorie')) {$indexor->delete_categorie($compte,param('id'));print h1("Catégorie supprimée");}
 elsif (param('rename_categorie')) {$indexor->rename_categorie($compte,param('id'),param('nom'));print h1("Catégorie renommée");}
+elsif (param('add_url')) {$indexor->add_site(param('url'),param('id')});print h1("Site ajouté");}
+
 else 
 	{
 	my ($responsable,$titre,$nb_page,$nb_words,$last_index,$nb_requetes,$racine) = $indexor->admin_compte($compte);

@@ -4,6 +4,10 @@ package Circa::Indexer;
 # Copyright 2000 A.Barbet alian@alianwebserver.com.  All rights reserved.
 
 # $Log: Indexer.pm,v $
+# Revision 1.7  2000/10/21 15:40:10  Administrateur
+# - Remove use of modules HTML::Parse, CGI, diagnostics
+# - Correct lot of things to get down memory usage
+#
 # Revision 1.6  2000/10/18 11:30:00  Administrateur
 # -Add english doc Indexer/Indexer.pm
 # -Correct problem with local indexing
@@ -22,18 +26,14 @@ package Circa::Indexer;
 use strict;
 use LWP::RobotUA; 
 use HTML::LinkExtor;
-use diagnostics;
+use HTML::Entities;
 use DBI;
-use DBI::DBD;
-use strict;
-use POSIX;
-use CGI qw/:standard :html3 :netscape escape unescape/;
 use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $VERSION);
 require Exporter;
 
 @ISA = qw(Exporter);
 @EXPORT = qw();
-$VERSION = ('$Revision: 1.6 $ ' =~ /(\d+\.\d+)/)[0];
+$VERSION = ('$Revision: 1.7 $ ' =~ /(\d+\.\d+)/)[0];
 
 =head1 NAME
 
@@ -100,10 +100,11 @@ Remarques:
 
 =head1 VERSION
 
-$Revision: 1.6 $
+$Revision: 1.7 $
 
 =cut
 
+########## CONFIG  ##########
 my $temporate = 1;# Temporise les requetes sur le serveur d'une minute. 
 		  # A modifier que si vous êtes l'administrateur de votre serveur !
 my $indexCgi = 0; # Suite les différents liens des CGI (ex: ?nom=toto&riri=eieiei)
@@ -114,7 +115,15 @@ my %ConfigMoteur=(
 	'facteur_titre'		=>10,
 	'facteur_full_text'	=>1,
 	'nb_min_mots'		=>2
-	);
+	); # Poid des differentes parties d'un doc HTML
+my %bad = map {$_ => 1} qw (
+	le la les et des de and or the un une ou qui que quoi a an 
+	&quot je tu il elle nous vous ils elles eux ce cette ces cet celui celle ceux 
+	celles qui que quoi dont ou mais ou et donc or ni car parceque un une des pour 
+	votre notre avec sur par sont pas mon ma mes tes ses the from for and our my 
+	his her and your to in that else also with this you date not has net but can 
+	see who dans est \$ { & com/ + /); # Mot à ne pas indexer
+########## FIN CONFIG  ##########
 
 sub new {
         my $class = shift;
@@ -142,6 +151,23 @@ sub size_max($size)
 	my $self = shift;
 	if (@_) {$self->{SIZE_MAX}=shift;}
 	return $self->{SIZE_MAX};
+	}
+
+=head2 set_agent
+
+=cut
+
+sub set_agent
+	{
+	my ($self,$locale,$bytes)=@_;
+	if (($temporate) && (!$locale))
+		{
+		$self->{AGENT} = new LWP::RobotUA 'CircaIndexer/0.1', $author;
+		$self->{AGENT}->delay(10/60.0);
+		}
+	else {$self->{AGENT} = new LWP::UserAgent 'CircaIndexer/0.1', $author;}
+	if ($self->{PROXY}) {$self->{AGENT}->proxy(['http', 'ftp'], $self->{PROXY});}
+	$self->{AGENT}->max_size($self->size_max) if $self->size_max;
 	}
 
 =head2 port_mysql($port)
@@ -278,10 +304,26 @@ nombre de mots indexés.
 sub parse_new_url
 	{
 	my $self=shift;
+	#system('/bin/ps m|grep perl>>/tmp/ressource');
 	my $idp=$_[0];
 	my ($nb,$nbAjout,$nbWords,$nbWordsGood)=(0,0,0,0);
-	my $requete="select id,url,local_url from ".$self->prefix_table.$idp."links where parse='0' order by id";
+	my $requete="select id,url from ".$self->prefix_table.$idp."links where parse='0' and local_url is null order by id";
 	my $sth = $self->{DBH}->prepare($requete);
+	$self->set_agent;
+	if ($sth->execute())
+		{
+		while (my ($id,$url)=$sth->fetchrow_array)
+			{
+			my ($res,$nbw,$nbwg) = $self->look_at($url,$id,$idp,undef,undef);
+			if ($res==-1) {$self->{DBH}->do("delete from ".$self->prefix_table.$idp."links where id=$id");}
+			else {$nbAjout+=$res;$nbWords+=$nbw;$nb++;$nbWordsGood+=$nbwg;}
+			}
+		}
+	else {print "\nYou must call this->create_table_circa before calling this method.\n";}
+	$sth->finish;
+	$requete="select id,url,local_url from ".$self->prefix_table.$idp."links where parse='0' and local_url is not null order by id";
+	$sth = $self->{DBH}->prepare($requete);
+	$self->set_agent('local');
 	if ($sth->execute())
 		{
 		while (my ($id,$url,$local_url)=$sth->fetchrow_array)
@@ -293,6 +335,7 @@ sub parse_new_url
 		}
 	else {print "\nYou must call this->create_table_circa before calling this method.\n";}
 	$sth->finish;
+
 	return ($nb,$nbAjout,$nbWords,$nbWordsGood);
 	}
 
@@ -305,9 +348,23 @@ Reindexe les sites qui n'ont pas été mis à jour depuis plus de $xj jours
 sub update
 	{
 	my ($this,$xj,$idp)=@_;
+	$this->set_agent;
 	my ($nb,$nbAjout,$nbWords,$nbWordsGood)=(0,0,0,0);
-	my $requete="select id,url,UNIX_TIMESTAMP(last_update),local_url from ".$this->prefix_table.$idp."links where TO_DAYS(NOW()) >= (TO_DAYS(last_check) + $xj) order by url";
+	my $requete="select id,url,UNIX_TIMESTAMP(last_update) from ".$this->prefix_table.$idp."links where TO_DAYS(NOW()) >= (TO_DAYS(last_check) + $xj) and local_url is null order by url";
 	my $sth = $this->{DBH}->prepare($requete);
+	if ($sth->execute())
+		{
+		while (my ($id,$url,$last_update)=$sth->fetchrow_array)
+			{
+			my ($res,$nbw,$nbwg) = $this->look_at($url,$id,$idp,$last_update,undef);
+			if ($res==-1) {$this->{DBH}->do("delete from ".$this->prefix_table.$idp."links where id=$id");}
+			else {$nbAjout+=$res;$nbWords+=$nbw;$nb++;$nbWordsGood+=$nbwg;}
+			}
+		}
+	else {print "\nYou must call this->create_table_circa before calling this method.\n";}
+	$sth->finish;	
+	$requete="select id,url,UNIX_TIMESTAMP(last_update),local_url from ".$this->prefix_table.$idp."links where TO_DAYS(NOW()) >= (TO_DAYS(last_check) + $xj) and local_url is not null order by url";
+	$sth = $this->{DBH}->prepare($requete);
 	if ($sth->execute())
 		{
 		while (my ($id,$url,$last_update,$local_url)=$sth->fetchrow_array)
@@ -374,7 +431,7 @@ sub drop_table_circa
 	{
 	my $self = shift;
 	my $sth = $self->{DBH}->prepare("select id from ".$self->prefix_table."responsable");
-	$sth->execute() || print header,$DBI::errstr,"<br>\n";	
+	$sth->execute() || print &header,$DBI::errstr,"<br>\n";	
 	while (my @row=$sth->fetchrow_array) {$self->drop_table_circa_id($row[0]);}
 	$sth->finish;
 	$self->{DBH}->do("drop table ".$self->prefix_table."responsable")|| print $DBI::errstr,"<br>\n";
@@ -431,7 +488,7 @@ CREATE TABLE ".$self->prefix_table.$id."links (
    description 	tinyblob NOT NULL,
    langue 	char(6) NOT NULL,
    valide 	tinyint(1) DEFAULT '0' NOT NULL,
-   categorie 	int(11)  DEFAULT '0' NOT NULL,
+   categorie 	int(11),
    last_check 	datetime DEFAULT '0000-00-00' NOT NULL,
    last_update  datetime DEFAULT '0000-00-00' NOT NULL,
    parse 	ENUM('0','1') DEFAULT '0' NOT NULL,
@@ -494,13 +551,13 @@ sub get_liste_liens
 	my ($id) =@_;
 	my %tab;
 	my $sth = $self->{DBH}->prepare("select id,url from ".$self->prefix_table.$id."links");
-	$sth->execute() || print header,$DBI::errstr,"<br>\n";	
+	$sth->execute() || print &header,$DBI::errstr,"<br>\n";	
 	while (my @row=$sth->fetchrow_array) 
 		{
 		$self->set_host_indexed($row[1]);
 		my $racine=$self->host_indexed;
 		$tab{$row[0]}=$row[1];
-		$tab{$row[0]}=~s/$racine//g;
+		$tab{$row[0]}=~s/www\.//g;
 		}	
 	$sth->finish;
 	my @l =sort { $tab{$a} cmp $tab{$b} } keys %tab;
@@ -522,7 +579,7 @@ sub get_liste_site
 	my $self=shift;
 	my %tab;
 	my $sth = $self->{DBH}->prepare("select id,email,titre from ".$self->prefix_table."responsable");
-	$sth->execute() || print header,$DBI::errstr,"<br>\n";
+	$sth->execute() || print &header,$DBI::errstr,"<br>\n";
 	while (my @row=$sth->fetchrow_array) {$tab{$row[0]}="$row[1]/$row[2]";}	
 	$sth->finish;
 	my @l =sort { $tab{$a} cmp $tab{$b} } keys %tab;
@@ -545,7 +602,7 @@ sub get_liste_categorie
 	my ($id) =@_;
 	my (%tab,%tab2);
 	my $sth = $self->{DBH}->prepare("select id,nom,parent from ".$self->prefix_table.$id."categorie");
-	$sth->execute() || print header,$DBI::errstr,"<br>\n";	
+	$sth->execute() || print &header,$DBI::errstr,"<br>\n";	
 	while (my @row=$sth->fetchrow_array) {$tab2{$row[0]}[0]=$row[1];$tab2{$row[0]}[1]=$row[2];}	
 	$sth->finish;
 	foreach my $key (keys (%tab2)) 
@@ -659,7 +716,7 @@ sub delete_categorie
 	{
 	my ($self,$compte,$id)=@_;
 	my $sth = $self->{DBH}->prepare("select id from ".$self->prefix_table.$compte."links where categorie=$id");
-	$sth->execute || print header,"Erreur:delete_categorie:$DBI::errstr<br>";
+	$sth->execute || print &header,"Erreur:delete_categorie:$DBI::errstr<br>";
 	# Pour chaque categorie
 	while (my @row = $sth->fetchrow_array)
 		{$self->{DBH}->do("delete from ".$self->prefix_table.$compte."relation where id_site = $row[0]");}
@@ -710,7 +767,7 @@ que le nombre de mots trouves sinon.
 sub look_at
 	{
 	my($this,$url,$idc,$idr,$lastModif,$url_local) = @_;
-	my ($l,$url_orig,$racineFile,$racineUrl);
+	my ($l,$url_orig,$racineFile,$racineUrl,$lastUpdate);
 	if ($url_local) 
 		{
 		$temporate=0;
@@ -726,51 +783,34 @@ sub look_at
 		$url=$url_local;
 		($racineFile,$racineUrl) = $this->get_first("select path,url from ".$this->prefix_table."local_url where id=$idr");
 		}
-	undef(%$l);
 	print "Analyse de $url<br>\n";
 	
-	my ($nb,$nbwg)=(0,0);
-	my $nburl=0;
+	my ($nb,$nbwg,$nburl)=(0,0,0);
 	$this->set_host_indexed($url);
 	my $analyseur = HTML::LinkExtor->new(undef,$url);
-	my ($uah,$uac);
-	$uah = new LWP::UserAgent 'CircaIndexer/0.1', $author;
-	if ((!$url_local)&&($this->{PROXY})) {$uah->proxy(['http', 'ftp'], $this->{PROXY});}
+	
 	# Creation d'une requete 
-	my $req = new HTTP::Request('HEAD' => "$url"); 
-
 	# On passe la requete à l'agent et on attend le résultat
-	my $res = $uah->request($req); 
+	my $res = $this->{AGENT}->request(new HTTP::Request('GET' => $url)); 
 	#print "<strong>Url :</strong>",$url,"<br>\n";
 	if ($res->is_success) 
 		{
 		# Langue
 		my $language = $res->content_language || 'unkno';
 		# Date derniere modif
-		my $lastUpdate = $res->last_modified;		
-		if (
-			((!$lastModif)||(!$lastUpdate)||($lastModif<$lastUpdate))
-		      &&((!$res->content_length) || ($res->content_length<$this->size_max))
-		   )
+		if ((!$lastModif)||(!$res->last_modified)||($lastModif<$res->last_modified))
 			{			
-			if ($lastUpdate)
+			if ($res->last_modified)
 				{
-				my @date = localtime($lastUpdate);
+				my @date = localtime($res->last_modified);
 				$lastUpdate = ($date[5]+1900).'-'.($date[4]+1).'-'.$date[3].' '.$date[2].':'.$date[1].':'.$date[0];
 				}
 			else {$lastUpdate='0000-00-00';}
-			# Creation d'une requete 
-			my $req = new HTTP::Request('GET' => "$url"); 
-			if ($temporate) {$uac = new LWP::RobotUA 'CircaIndexer/0.1', $author;}
-			else {$uac = new LWP::UserAgent 'CircaIndexer/0.1', $author;}
-			if ((!$url_local)&&($this->{PROXY})) {$uah->proxy(['http', 'ftp'], $this->{PROXY});}
-			# On passe la requete à l'agent et on attend le résultat
-			my $res = $uac->request($req); 			
+			#system('/bin/ps m|grep perl>>/tmp/ressource'); 			
 			# Mots clefs et description
 			my ($keyword,$desc)=get_meta($res->content);
 			# Titre
-			my $titre = $res->title;
-			if (!$titre) {$titre=$url;}
+			my $titre = $res->title || $url;
 			$titre=~s/'/\\'/g if ($titre);
 			# Categorie
 			my $categorie = $this->get_categorie($url,$idr);
@@ -786,31 +826,32 @@ sub look_at
 				where id=$idc";
 			$this->{DBH}->do($requete) || print "Erreur $requete:$DBI::errstr<br>\n";
 
+			# html2txt
+			my $text = $res->content;
+			$text=~s{ <! (.*?) (--.*?--\s*)+(.*?)> } {if ($1 || $3) {"<!$1 $3>";} }gesx; 
+			$text=~s{ <(?: [^>'"] * | ".*?" | '.*?' ) + > }{}gsx;
+			$text=decode_entities($text); 
+
 			# Traitement des mots trouves
-			my $u = MyAnalyseur->new;
-			$u->parse($res->content);
-			$l = analyse_data($keyword,	$ConfigMoteur{'facteur_keyword'},%$l);
-			$l = analyse_data($desc,   	$ConfigMoteur{'facteur_description'},%$l);
-			$l = analyse_data($titre,  	$ConfigMoteur{'facteur_titre'},%$l);
-			$l = analyse_data($u->get_text,	$ConfigMoteur{'facteur_full_text'},%$l);
-			$u->clean_text;
+			$l = analyse_data($keyword,	$ConfigMoteur{'facteur_keyword'},	%$l);
+			$l = analyse_data($desc,   	$ConfigMoteur{'facteur_description'},	%$l);
+			$l = analyse_data($titre,  	$ConfigMoteur{'facteur_titre'},		%$l);
+			$l = analyse_data($text,	$ConfigMoteur{'facteur_full_text'},	%$l);
 			$this->{DBH}->do("delete from ".$this->prefix_table.$idr."relation where id_site = $idc");
 		
 			# Chaque mot trouve plus de $ConfigMoteur{'nb_min_mots'} fois 
 			# est enregistre
 			while (my ($mot,$nb)=each(%$l)) 
-				{
-				$mot =~s/'/\\'/g;
+				{		
 				my $requete = "insert into ".$this->prefix_table.$idr."relation (mot,id_site,facteur) values ('$mot',$idc,$nb)";
 				if ($nb >=$ConfigMoteur{'nb_min_mots'}) {$this->{DBH}->do($requete);$nbwg++;}
 				}
-			my $nbw=keys %$l;
+			my $nbw=keys %$l;undef(%$l);
 			
 	  		# Traitement des url trouves
 			$analyseur->parse($res->content);
 			my @l = $analyseur->links;
-			
-			foreach my $var (@l) 
+			foreach my $var (@l)
 				{
 				$$var[2] = $this->check_links($$var[0],$$var[2]);
 				if (($url_local) && ($$var[2]))
@@ -828,7 +869,7 @@ sub look_at
 		else {print "Aucune modification depuis la dernière indexation sur $url<br>\n";return (0,0,0);}
   		}
 	# Sinon previent que URL defectueuse
-	else {print "Url non valide:$url\n";return (-1,0,0);} 
+	else {print "Url non valide:$url\n";return (-1,0,0);} 	
 	}
 
 =head2 add_site($url,$idMan)
@@ -934,25 +975,17 @@ sub analyse_data
 	my ($data,$facteur,%l) = @_;
 	if ($data)
 		{
-		# Mots trop frequent
-		my %bad = map {$_ => 1} qw (
-			le la les et des de and or the un une ou qui que quoi a an 
-			&quot je tu il elle nous vous ils elles eux ce cette ces cet celui celle ceux 
-			celles qui que quoi dont ou mais ou et donc or ni car parceque un une des pour 
-			votre notre avec sur par sont pas mon ma mes tes ses the from for and our my 
-			his her and your to in that else also with this you date not has net but can 
-			see who dans est \$ { & com/ + /);
-
 		# Ponctuation et mots recurents
+		$data=~s/[\s\t]+/ /gm;
 		$data=~s/http:\/\// /gm;
-		$data=~s/[\.;:,\?!()"'\[\]#=\t]/ /gm;	
+		$data=~tr/.;:,?!()"'[]#=/ /;	
 		my @ex = split(/\s/,$data);
 		foreach my $e (@ex) 
-			{			
+			{
+			next if !$e;			
 			$e=lc($e);
-			if (($e)&&($e =~/\w/)&&(length($e)>2)&&(!$bad{$e})) {$l{$e}+=$facteur;}
+			if (($e =~/\w/)&&(length($e)>2)&&(!$bad{$e})) {$l{$e}+=$facteur;}
 			}
-		undef(@ex);
 		}
 	return \%l;
 	}
@@ -981,32 +1014,32 @@ sub get_categorie
 	my @l = split(/\//,$rep);
 	my $parent=0;
 	my $regexp = qr/\.(htm|html|txt|java)$/;
-	foreach (@l) {if ($_ !~ $regexp) {$parent = $self->create_categorie($_,$parent,$responsable);}}
+	foreach (@l) {if (($_) && ($_ !~ $regexp)) {$parent = $self->create_categorie($_,$parent,$responsable);}}
 	return $parent;
 	}
 
 sub create_categorie
 	{
-	my $self=shift;
-	my ($nom,$parent,$responsable)=@_;
+	my ($self,$nom,$parent,$responsable)=@_;
 	$nom=ucfirst($nom);
 	$nom=~s/_/ /g;
-	my ($id) = $self->get_first("select id from ".$self->prefix_table.$responsable."categorie where nom='$nom' and parent=$parent");
-	if (!$id) 
+	my $id;
+	if ($nom) {($id) = $self->get_first("select id from ".$self->prefix_table.$responsable."categorie where nom='$nom' and parent=$parent");}
+	if ((!$id) && (defined $parent))
 		{
 		my $sth = $self->{DBH}->prepare("insert into ".$self->prefix_table.$responsable."categorie(nom,parent) values('$nom',$parent)");
-		$sth->execute || print header,"Erreur insert into ".$self->prefix_table.$responsable."categorie(nom,parent) values('$nom',$parent) : $DBI::errstr<br>";
+		$sth->execute || print &header,"Erreur insert into ".$self->prefix_table.$responsable."categorie(nom,parent) values('$nom',$parent) : $DBI::errstr<br>";
 		$sth->finish;
 		$id = $sth->{'mysql_insertid'};
 		}
-	return $id;
+	return $id || 0;
 	}
 
 sub check_links 
 	{
      	my($self,$tag,$links) = @_;
      	my $host = $self->host_indexed;
-     	my $bad = qr/\.(doc|zip|ps|gif|jpg|gz|pdf|eps|png|deb|xls|ppt|class|GIF|css|js)$/i;
+     	my $bad = qr/\.(doc|zip|ps|gif|jpg|gz|pdf|eps|png|deb|xls|ppt|class|GIF|css|js|wav)$/i;
 	if (($tag) && ($links) && ($tag eq 'a') && ($links=~/^$host/) && ($links !~ $bad)) 
 		{
 		if ($links=~/^(.*?)#/) {$links=$1;} # Don't add anchor
@@ -1026,21 +1059,14 @@ sub get_first
 	{
 	my ($self,$requete)=@_;
 	my $sth = $self->{DBH}->prepare($requete);
-	$sth->execute || print header,"Erreur:$requete:$DBI::errstr<br>";
+	$sth->execute || print &header,"Erreur:$requete:$DBI::errstr<br>";
 	# Pour chaque categorie
 	my @row = $sth->fetchrow_array;
 	$sth->finish;
 	return @row;
 	}
 
-package MyAnalyseur;
-use HTML::Parser;
-use HTML::Entities qw(decode_entities);
-use vars qw(@ISA $texto);
-@ISA=qw(HTML::Parser);
-sub text {$texto .= decode_entities($_[1]);}
-sub get_text {return $texto;}
-sub clean_text {undef $texto;} 
+sub header {return "Content-Type: text/html\n\n";}
 
 =head1 AUTHOR
 

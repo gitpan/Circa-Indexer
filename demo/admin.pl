@@ -16,7 +16,7 @@
 # Release initiale
 #
 
-use diagnostics;
+#use diagnostics;
 use strict;
 use Circa::Indexer;
 use Getopt::Long;

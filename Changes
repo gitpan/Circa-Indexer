@@ -30,4 +30,7 @@ revision 1.5  Date: 2000/09/28 16:05:14
 Revision 1.6  Date: 2000/10/18 11:30:00
  	- Add english doc Indexer/Indexer.pm
  	- Correct problem with local indexing
-	
+
+Revision 1.7  Date: 2000/10/21 15:40:10
+ 	- Remove use of modules HTML::Parse, CGI, diagnostics
+ 	- Correct lot of things to get down memory usage
