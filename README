@@ -29,6 +29,8 @@ have insufficient access privileges to add to the perl
 library directory, you can still use Indexer.pm.  
 See the docs in directory demo for details.
 
+Then, for use script, see demo/README
+
 FEATURES ?
 
 + Full text indexing 

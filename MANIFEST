@@ -4,6 +4,7 @@ Indexer.pm
 MANIFEST
 Makefile.PL
 test.pl
+demo/INSTALL
 demo/admin.pl
 demo/admin.cgi
 demo/admin_compte.cgi

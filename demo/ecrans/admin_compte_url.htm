@@ -44,7 +44,7 @@ TD {}
 <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr> 
     <td width="8%" class="td-bord" align="left">&nbsp;</td>
-    <td width="22%"><img src="http://www.alianwebserver.com/circa/images/circa_logo1.gif" width="70" height="70"><img src="http://www.alianwebserver.com/circa/images/circa_logo2.gif" width="110" height="50"> 
+    <td width="22%"><img src="/circa/images/circa_logo1.gif" width="70" height="70"><img src="/circa/images/circa_logo2.gif" width="110" height="50">
     </td>
     <td width="62%"><!-- #BeginEditable "titre" -->
       <h1>Administration de votre compte</h1>
@@ -57,38 +57,44 @@ TD {}
     <td colspan="2">&nbsp;</td>
     <td width="8%" class="td-bord">&nbsp;</td>
   </tr>
-  <tr> 
+  <tr>
     <td width="8%" class="td-bord">&nbsp;</td>
     <td colspan="2"><!-- #BeginEditable "corps" --> <? $sommaire ?>
 <form method="post">
         <h2>Ajouter une URL</h2>
-        <p> 
+        <p>
           <input type="hidden" name="compte" value="<? $id ?>">
-          <input type="text" name="url" value="http://">
-          <? $categoriesN ?> 
+          <input type="hidden" name="ecran_urls" value="1">
+          <input type="text" name="url"> Ex: http://www.go.com <br>
+          <? $categoriesN ?>
           <input type="submit" name="add_url" value="Add URL">
         </p>
       </form>
       <form>
         <h2>Modifier une URL</h2>
-        <p> 
+        <p>
           <input type="hidden" name="compte" value="<? $id ?>">
-          <? $list_url ?> 
+          <? $list_url ?>
           <input type="submit" name="ecran_url" value="Update">
         </p>
       </form>
       <form>
         <h2>Supprimer une URL </h2>
-        <p> 
+        <p>
           <input type="hidden" name="compte" value="<? $id ?>">
-          <? $liens ?> 
+          <input type="hidden" name="ecran_urls" value="1">
+          <? $liens ?>
           <input type="submit" name="delete_url" value="Delete">
         </p>
         <p><b>Remarque:</b></p>
-        <p>Pour que Circa n'indexe pas certaines pages ou certains r&eacute;pertoires 
-          vous pouvez utiliser les balises HTML d&eacute;di&eacute;es &agrave; 
-          cet usage (&quot;noindex&quot;) ou le fichier robots.txt &agrave; la 
-          racine de votre site.</p>
+        <ul>
+        <li>Pour que Circa n'indexe pas certaines pages ou certains r&eacute;pertoires
+          vous pouvez utiliser les balises HTML d&eacute;di&eacute;es &agrave;
+          cet usage (&quot;noindex&quot;) ou le fichier robots.txt &agrave; la
+          racine de votre site.</li>
+          <li>Les titre et description de la page sont automatiquement positionnés en fonction
+          des balises &lt;title&gt; et meta name=description au moment de l'indexation</li>
+          </ul>
       </form>
       <h2>&nbsp;</h2>
       <!-- #EndEditable --></td>

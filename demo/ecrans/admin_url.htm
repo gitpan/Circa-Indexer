@@ -44,142 +44,62 @@ TD {}
 <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr> 
     <td width="8%" class="td-bord" align="left">&nbsp;</td>
-    <td width="22%"><img src="http://www.alianwebserver.com/circa/images/circa_logo1.gif" width="70" height="70"><img src="http://www.alianwebserver.com/circa/images/circa_logo2.gif" width="110" height="50"> 
+    <td width="22%"><img src="/circa/images/circa_logo1.gif" width="70" height="70"><img src="/circa/images/circa_logo2.gif" width="110" height="50">
     </td>
     <td width="62%"><!-- #BeginEditable "titre" -->
       <h1>D&eacute;tail sur la page <? $titre ?></h1>
       <!-- #EndEditable --></td>
     <td width="8%" class="td-bord">&nbsp;</td>
   </tr>
-  <tr> 
+  <tr>
     <td width="8%" class="td-bord">&nbsp;</td>
     <td colspan="2">&nbsp;</td>
     <td width="8%" class="td-bord">&nbsp;</td>
   </tr>
-  <tr> 
+  <tr>
     <td width="8%" class="td-bord">&nbsp;</td>
-    <td colspan="2"><!-- #BeginEditable "corps" --> 
-    <? $sommaire ?> <form>  
+    <td colspan="2"><!-- #BeginEditable "corps" -->
+    <? $sommaire ?> <form>
         <table border="2" cellspacing="2" cellpadding="2" align="center">
-          <tr> 
-            <th nowrap> 
-              <p class="without-margin">Url 
+          <tr>
+            <th nowrap>
+              <p class="without-margin">Url
                 <input type="hidden" name="compte" value="<? $compte ?>">
                 <input type="hidden" name="id" value="<? $id ?>">
               </p>
             </th>
-            <td> 
+            <td>
               <input type="text" name="url" value="<? $url ?>" size="70">
             </td>
           </tr>
-          <tr> 
-            <th nowrap> 
-              <p class="without-margin">Url local</p>
-            </th>
-            <td> 
-              <input type="text" name="urllocal" size="70" value="<? $urllocal ?>">
-            </td>
-          </tr>
-          <tr> 
-            <th nowrap> 
-              <p class="without-margin">Titre</p>
-            </th>
-            <td> 
-              <input type="text" name="titre" size="70" value="<? $titre ?>">
-            </td>
-          </tr>
-          <tr> 
-            <th nowrap> 
-              <p class="without-margin">Description</p>
-            </th>
-            <td> 
-              <textarea name="description" cols="70" rows="5"><? $description ?></textarea>
-            </td>
-          </tr>
-          <tr> 
-            <th nowrap> 
-              <p class="without-margin">Langue</p>
-            </th>
-            <td><? $langue ?></td>
-          </tr>
-          <tr> 
-            <th nowrap> 
-              <p class="without-margin">Cat&eacute;gorie</p>
-            </th>
-            <td><? $categorie ?></td>
-          </tr>
-          <tr> 
-            <th nowrap> 
-              <p class="without-margin">Apparait dans les cat&eacute;gories</p>
-            </th>
-            <td><? $browse_categorie ?> </td>
-          </tr>
-          <tr> 
-            <th nowrap> 
-              <p class="without-margin">Index&eacute;</p>
-            </th>
-            <td><? $indexe ?></td>
-          </tr>
-          <tr> 
-            <th nowrap> 
-              <p class="without-margin">Valide</p>
-            </th>
-            <td><? $valide ?></td>
-          </tr>
-          <tr> 
-            <th nowrap> 
-              <p class="without-margin">Niveau</p>
-            </th>
-            <td> 
-              <input type="text" name="niveau" size="3" value="<? $niveau ?>">
-            </td>
-          </tr>
-          <tr> 
-            <th nowrap> 
-              <p class="without-margin">Mots index&eacute;s</p>
-            </th>
-            <td> 
-              <p class="without-margin"><? $mots ?> 
-              <p> 
-            </td>
-          </tr>
-          <tr> 
-            <th nowrap> 
-              <p class="without-margin">Derni&egrave;re indexation le:</p>
-            </th>
-            <td> 
-              <input type="text" name="last_check" value="<? $last_check ?>">
-            </td>
-          </tr>
-          <tr> 
-            <th nowrap> 
-              <p class="without-margin">Derni&egrave;re modification de la page:</p>
-            </th>
-            <td> 
-              <input type="text" name="last_update" value="<? $last_update ?>">
-            </td>
-          </tr>
-          <tr>
-            <th nowrap>&nbsp;</th>
-            <td>
-              <input type="submit" name="save_url" value="Submit">
-            </td>
-          </tr>
+          <tr><th nowrap><p class="without-margin">Url local</p></th><td><input type="text" name="urllocal" size="70" value="<? $urllocal ?>"></td></tr>
+          <tr><th nowrap><p class="without-margin">Titre</p></th><td><input type="text" name="titre" size="70" value="<? $titre ?>"></td></tr>
+          <tr><th nowrap><p class="without-margin">Description</p></th><td><textarea name="description" cols="30" rows="5"><? $description ?></textarea></td></tr>
+          <tr><th nowrap><p class="without-margin">Langue</p></th><td><? $langue ?></td></tr>
+          <tr><th nowrap><p class="without-margin">Cat&eacute;gorie</p></th><td><? $categorie ?></td></tr>
+          <tr><th nowrap><p class="without-margin">Apparait dans les cat&eacute;gories</p></th><td><? $browse_categorie ?> </td></tr>
+          <tr><th nowrap><p class="without-margin">Index&eacute;</p></th><td><? $indexe ?></td></tr>
+          <tr><th nowrap><p class="without-margin">Valide</p></th><td><? $valide ?></td></tr>
+          <tr><th nowrap><p class="without-margin">Niveau</p></th><td><input type="text" name="niveau" size="3" value="<? $niveau ?>"></td></tr>
+          <tr><th nowrap><p class="without-margin">Mots index&eacute;s</p></th><td><p class="without-margin"><? $mots ?><p></td></tr>
+          <tr><th nowrap><p class="without-margin">Derni&egrave;re indexation le:</p></th><td><input type="text" name="last_check" value="<? $last_check ?>"></td></tr>
+          <tr><th nowrap><p class="without-margin">Derni&egrave;re modification de la page:</p></th><td><input type="text" name="last_update" value="<? $last_update ?>"></td></tr>
+          <tr><th nowrap>&nbsp;</th><td><input type="submit" name="save_url" value="Submit"><input type="submit" name ="delete_url" value="Supprimer l'url du site"></td></tr>
         </table>
       </form>
       <!-- #EndEditable --></td>
     <td width="8%" class="td-bord">&nbsp;</td>
   </tr>
-  <tr> 
+  <tr>
     <td width="8%" class="td-bord">&nbsp;</td>
     <td colspan="2"><!-- #BeginEditable "bas_page" --><!-- #EndEditable --></td>
     <td width="8%" class="td-bord">&nbsp;</td>
   </tr>
-  <tr> 
+  <tr>
     <td width="8%" class="td-bord">&nbsp;</td>
-    <td colspan="2"> 
+    <td colspan="2">
       <h6>&nbsp;</h6>
-      <h6> Powered by <a href="http://www.alianwebserver.com/circa" target="_blank">AlianWebServer</a> 
+      <h6> Powered by <a href="http://www.alianwebserver.com/circa" target="_blank">AlianWebServer</a>
       </h6>
     </td>
     <td width="8%" class="td-bord">&nbsp;</td>

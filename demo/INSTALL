@@ -1,0 +1,25 @@
+Update this script:
+
+admin.pl : Command line interface
+admin_compte.cgi : CGI Interface for administrate one account
+admin.cgi : General CGI Interface
+
+And set this:
+
+my $user = "alian";  # set your database User
+my $pass = "";   # set your database password
+my $db    = "circa";  # set your database name
+
+For the two CGI file, set too this:
+
+my $rep = "/home/alian/project/Circa/Indexer/demo/ecrans/";
+where your html admin files are
+
+Then, you can do:
+
+In command line:
+admin.pl +create +add=http://www.monsite.com +update=1
+for index your first url.
+
+With CGI: 
+Just run admin.cgi

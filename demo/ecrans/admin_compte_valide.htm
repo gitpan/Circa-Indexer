@@ -44,7 +44,7 @@ TD {}
 <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr> 
     <td width="8%" class="td-bord" align="left">&nbsp;</td>
-    <td width="22%"><img src="http://www.alianwebserver.com/circa/images/circa_logo1.gif" width="70" height="70"><img src="http://www.alianwebserver.com/circa/images/circa_logo2.gif" width="110" height="50"> 
+    <td width="22%"><img src="/circa/images/circa_logo1.gif" width="70" height="70"><img src="/circa/images/circa_logo2.gif" width="110" height="50">
     </td>
     <td width="62%"><!-- #BeginEditable "titre" -->
       <h1>Administration de votre compte</h1>
@@ -62,9 +62,9 @@ TD {}
     <td colspan="2"><!-- #BeginEditable "corps" --> <? $sommaire ?>
       <form method="get" name="reno">
         <h2>Liste des URL non valid&eacute;es</h2>
-        <p> <input type="hidden" name="ecran_validation" value="1">
+        <p>
           <input type="hidden" name="compte" value="<? $id ?>">
-          <? $tab_valide ?> </p>
+          <? $tab_valide ?> <input type="submit" name="ecran_url" value="Modifier"></p>
       </form>
       <!-- #EndEditable --></td>
     <td width="8%" class="td-bord">&nbsp;</td>
