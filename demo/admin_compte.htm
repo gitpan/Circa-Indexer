@@ -1,0 +1,135 @@
+<html><!-- #BeginTemplate "/Templates/circa.dwt" -->
+<head>
+<!-- #BeginEditable "doctitle" --> 
+<title>Simple interface d'administration de Circa</title>
+<!-- #EndEditable --> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="circa.css">
+</head>
+
+<body bgcolor="#FFFFFF">
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr> 
+    <td width="8%" class="td-bord">&nbsp;</td>
+    <td width="22%"><img src="images/circa_logo1.gif" width="70" height="70"><img src="images/circa_logo2.gif" width="110" height="50"> 
+    </td>
+    <td width="62%"><!-- #BeginEditable "titre" -->
+      <h1>Administration de votre compte</h1>
+      <!-- #EndEditable --></td>
+    <td width="8%" class="td-bord">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td width="8%" class="td-bord">&nbsp;</td>
+    <td colspan="2">&nbsp;</td>
+    <td width="8%" class="td-bord">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td width="8%" class="td-bord">&nbsp;</td>
+    <td colspan="2"><!-- #BeginEditable "corps" --> 
+      <h2>Informations g&eacute;n&eacute;rales</h2>
+      <table border="2" cellspacing="2" cellpadding="2">
+        <tr> 
+          <td> 
+            <p class="h2-sans-marge">Responsable</p>
+          </td>
+          <td> 
+            <p class="h2-sans-marge"><b><? $responsable ?></b></p>
+          </td>
+        </tr>
+        <tr> 
+          <td> 
+            <p class="h2-sans-marge">Titre du site</p>
+          </td>
+          <td> 
+            <p class="h2-sans-marge"><b><? $titre ?></b></p>
+          </td>
+        </tr>
+        <tr> 
+          <td> 
+            <p class="h2-sans-marge">Racine du site index&eacute;</p>
+          </td>
+          <td><b> 
+            <p class="h2-sans-marge"><a href="<? $racine ?>"><? $racine ?></a></p>
+            </b></td>
+        </tr>
+        <tr> 
+          <td> 
+            <p class="h2-sans-marge">Nombre de pages inscrites</p>
+          </td>
+          <td> 
+            <p class="h2-sans-marge"><b><? $nbpages ?></b></p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p class="h2-sans-marge">Nombre de mots index&eacute;s</p>
+          </td>
+          <td>
+            <p class="h2-sans-marge"><b><? $nbmots ?></b></p>
+          </td>
+        </tr>
+        <tr> 
+          <td> 
+            <p class="h2-sans-marge">Derni&egrave;re indexation</p>
+          </td>
+          <td> 
+            <p class="h2-sans-marge"><b><? $last_indexed ?></b></p>
+          </td>
+        </tr>
+      </table>
+      <h2>Statistiques</h2>
+      <p>Nombre de requ&ecirc;tes d&eacute;j&agrave; effectu&eacute;es : <? $nb_requetes ?></p>
+      <p>Nombre de requ&ecirc;tes par jour :</p>
+      <p>10 mots les plus recherch&eacute;s :</p>
+      <p>10 mots les plus souvent trouv&eacute;s sur votre site :<? $mots_plus_frequent ?></p>
+      <h2>Modifier votre compte</h2>
+      <form>
+        <p>Supprimer une URL :
+          <input type="hidden" name="compte" value="<? $id ?>">
+          <? $liens ?> 
+          <input type="submit" name="delete_url" value="delete">
+        </p>
+        <p><b>Remarque:</b></p>
+        <p>Pour que Circa n'indexe pas certaines pages ou certains r&eacute;pertoires 
+          vous pouvez utiliser les balises HTML d&eacute;di&eacute;es &agrave; 
+          cet usage (&quot;noindex&quot;) ou le fichier robots.txt &agrave; la 
+          racine de votre site.</p>
+      </form>
+      <h2>Cat&eacute;gories</h2>
+      <form>
+        <p>Supprimer une cat&eacute;gorie :
+          <input type="hidden" name="compte" value="<? $id ?>">
+          <? $categories ?> 
+          <input type="submit" name="delete_categorie" value="delete">
+        </p>
+      </form>
+      <form>
+        <p>Renommez une cat&eacute;gorie : 
+          <input type="hidden" name="compte" value="<? $id ?>">
+          <? $categories ?> </p>
+        <p> 
+          <input type="text" name="nom">
+          <input type="submit" name="rename_categorie" value="rename">
+        </p>
+      </form>
+      <h2>&nbsp;</h2>
+      <!-- #EndEditable --></td>
+    <td width="8%" class="td-bord">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td width="8%" class="td-bord">&nbsp;</td>
+    <td colspan="2"><!-- #BeginEditable "bas_page" --><!-- #EndEditable --></td>
+    <td width="8%" class="td-bord">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td width="8%" class="td-bord">&nbsp;</td>
+    <td colspan="2"> 
+      <h6>&nbsp;</h6>
+      <h6>Powered by <a href="http://www.alianwebserver.com/circa" target="_blank">AlianWebServer</a> 
+      </h6>
+    </td>
+    <td width="8%" class="td-bord">&nbsp;</td>
+  </tr>
+</table>
+</body>
+<!-- #EndTemplate --></html>

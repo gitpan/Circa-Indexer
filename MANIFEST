@@ -1,0 +1,14 @@
+Changes
+README
+Indexer.pm
+MANIFEST
+Makefile.PL
+test.pl
+demo/admin.htm
+demo/admin.pl
+demo/admin.cgi
+demo/admin_compte.cgi
+demo/admin_compte.htm
+demo/circa.css
+demo/images/circa_logo1.gif
+demo/images/circa_logo2.gif

@@ -1,0 +1,85 @@
+#!/usr/bin/perl -w
+#
+# Simple CGI interface to module Circa::Indexer
+# Copyright 2000 A.Barbet alian@alianwebserver.com.  All rights reserved.
+# Take a look in admin.htm
+#
+# $Date: 2000/09/25 23:23:24 $
+# $Log: admin.cgi,v $
+# Revision 1.3  2000/09/25 23:23:24  Administrateur
+#
+# Revision 1.2  2000/09/22 23:17:04  Administrateur
+# Ajout possiblite d'indexer un site
+# sans passer par un serveur Web
+#
+# Revision 1.1.1.1  2000/09/16 11:26:09  Administrateur
+#
+
+use diagnostics;
+use strict;
+use CGI qw/:standard :html3 :netscape escape unescape/;
+use CGI::Carp qw/fatalsToBrowser/;
+
+use Circa::Indexer;
+
+my $user = "alian";	# User utilisé
+my $pass = "spee/do00"; # mot de passe
+my $db 	 = "circa";	# nom de la base de données
+my $masque = "/home/Administrateur/public_html/Circa/Indexer/demo/admin.htm";
+
+my $indexor = new Circa::Indexer;
+print header,$indexor->start_classic_html;
+
+if (!$indexor->connect_mysql($user,$pass,$db,"localhost")) {die "Erreur à la connection MySQL:$DBI::errstr\n";}
+
+# Drop table
+if (param('drop'))
+	{
+	$indexor->drop_table_circa;
+	print h1("Tables supprimées");
+	}
+
+# Create table
+if (param('create'))
+ 	{
+	$indexor->create_table_circa;
+	print h1("Tables créées");
+	}
+
+# Add site
+if (param('url')) 
+	{
+	$indexor->addSite(param('url'),param('email'),param('titre'));
+	print h1("Site ajouté");
+	}
+
+# Add local site
+if (param('local_url')) 
+	{
+	$indexor->addLocalSite(
+		param('local_url'),
+		param('email'),
+		param('titre'),
+		param('local_file'),
+		param('url_racine'),
+		param('local_file_site'));
+	print h1("Site ajouté");
+	}
+
+# Read url not parsed
+if (param('parse_new'))
+	{
+	my ($nbIndexe,$nbAjoute,$nbWords,$nbWordsGood) = $indexor->parse_new_url(param('id'));
+	print "$nbIndexe pages indexées, $nbAjoute pages ajoutées, $nbWordsGood mots indexés, $nbWords mots lus\n";
+	}
+
+# Update index
+if (param('update')) {$indexor->update(param('nb_jours'),param('id'));}
+
+# Liste des variables à substituer dans le template
+my %vars = ('liste_site'=> $indexor->get_liste_site);
+# Affichage du resultat
+print $indexor->fill_template($masque,\%vars),end_html;
+
+# Close connection
+$indexor->close_connect;
